@@ -196,7 +196,7 @@ Three skill tracks that unlock helpful hints and options:
 ## 12. Medical accuracy policy
 
 1. Every case has a written **source note** pointing to the reference it's built on (Army APLs, AR 40-501, standard clinical guidelines).
-2. Content gets a **second-person review** by a licensed clinician (ideally a current or former Army flight surgeon) before release.
+2. Content gets a **clinical review** by the project owner before release.
 3. Where the regulation is complicated, the game **simplifies but doesn't contradict**, and the teaching point says it's simplified.
 4. Regulations change. Content records the date it was last checked, and cases citing changed policy get updated.
 5. A permanent, visible disclaimer: *fictional game, not medical advice, not affiliated with the U.S. Army or Department of Defense.*
@@ -260,10 +260,13 @@ Example lines:
 | 4 NPCs | 6 core cast with heart arcs |
 | Endless play | One year with an ending and a post-game mode |
 
-## 18. Open questions
+## 18. Decisions and open questions
 
-1. Who will do the **clinical review**? (Needed before Phase 2 content is final)
-2. Should the player character be **customizable** (name, appearance, pronouns)? Recommended yes, simple.
-3. How much should the **Fall incident** show? Recommended: hard landing, injuries, no deaths.
-4. **Art**: commission a pixel artist, or use open-licensed tilesets plus custom sprites?
-5. **Release:** itch.io plus GitHub Pages at 1.0?
+### Decided
+1. **Clinical review:** the project owner reviews all case content before release.
+2. **Player character:** customizable, kept simple (name, appearance, pronouns).
+3. **Fall incident:** hard landing with injuries only. No deaths.
+4. **Art:** original pixel art made in-project (sprites drawn in code, as in the prototype), in the style set out in §14. No commissioned artist or third-party tilesets for now.
+
+### Open
+1. **Release:** itch.io plus GitHub Pages at 1.0, or GitHub Pages only? Decide before Phase 6.
