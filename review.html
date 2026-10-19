@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Review</title>
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 860px; margin: 0 auto; padding: 16px; color: #222; background: #fbf8f1; line-height: 1.45; }
+  h1 { font-size: 1.6em; margin-bottom: 0; } h2 { margin-top: 2em; border-bottom: 2px solid #5b4a2b; }
+  .intro { color: #555; }
+  .card { background: #fff; border: 1px solid #d9c9a0; padding: 10px 14px; margin: 14px 0; break-inside: avoid; }
+  .card h3 { margin: 0 0 4px; }
+  .meta { color: #6b5d3d; font-size: .9em; }
+  .status { float: right; font-size: .85em; padding: 1px 8px; border-radius: 10px; background: #fde2c8; color: #8a3b0a; }
+  .status.ok { background: #d8efd2; color: #2e6b22; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0; font-size: .95em; }
+  td, th { border: 1px solid #e3d8bd; padding: 3px 6px; text-align: left; vertical-align: top; }
+  th { background: #f4ecd8; width: 28%; }
+  .key { color: #2e6b22; font-weight: bold; }
+  .low { color: #8a3b0a; }
+  ol { margin: 4px 0; } .right { font-weight: bold; color: #2e6b22; }
+  .src { font-size: .9em; color: #555; border-top: 1px dashed #d9c9a0; margin-top: 6px; padding-top: 4px; }
+  @media print { body { background: #fff; } .card { border-color: #999; } }
+</style>
+</head>
+<body>
+<h1>Flight Line Doc: content review</h1>
+<p class="intro">Everything the game teaches, in one place. Check each item against current Army regulations and clinical guidance. To sign off, set <code>reviewed</code> to the date in the matching file under <code>js/data/</code>. <b>Key</b> marks findings needed for a thorough workup. <span class="low">Low-trust answers</span> are what a guarded patient says instead.</p>
+<div id="out"></div>
+<script src="js/data/people.js"></script>
+<script src="js/data/cases.js"></script>
+<script src="js/data/fdme.js"></script>
+<script src="js/data/story.js"></script>
+<script>
+(() => {
+  const D = window.FLD, out = document.getElementById('out');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const status = r => `<span class="status${r ? ' ok' : ''}">${r ? 'reviewed ' + esc(r) : 'not reviewed'}</span>`;
+  const dispo = k => esc(D.DISPO[k] ? D.DISPO[k].label : k);
+  let html = '';
+  const done = D.CASES.filter(c => c.reviewed).length + D.FDME.filter(c => c.reviewed).length;
+  html += `<p><b>${done}</b> of ${D.CASES.length + D.FDME.length} items reviewed.</p>`;
+
+  html += `<h2>Sick-call cases (${D.CASES.length})</h2>`;
+  D.CASES.forEach(c => {
+    const rows = (list, label) => list.map(h => `<tr><th>${label}: ${esc(h.q || (D.TESTS[h.id] || {}).name)}${h.key ? ' <span class="key">key</span>' : ''}</th><td>${esc(h.a)}${h.low ? `<br><span class="low">Low trust: ${esc(h.low)}</span>` : ''}${h.id && D.TESTS[h.id] && D.TESTS[h.id].needs ? `<br><i>Needs upgrade: ${esc(D.NEEDS_NAME[D.TESTS[h.id].needs])}</i>` : ''}</td></tr>`).join('');
+    html += `<div class="card">${status(c.reviewed)}<h3>${esc(c.title)}</h3>
+      <div class="meta">id ${esc(c.id)} · tier ${c.tier} · seasons ${esc(c.seasons === 'all' ? 'all' : c.seasons.join(', '))} · roles ${esc(c.roles.join(', '))}${c.minAge ? ' · age ' + c.minAge + '+' : ''}</div>
+      <p><b>Complaint:</b> ${esc(c.complaint)}<br><b>Vitals:</b> ${esc(c.vitals)}</p>
+      <table>${rows(c.history, 'History')}${rows(c.exam, 'Exam')}${rows(c.tests, 'Test')}</table>
+      <b>Diagnosis options</b><ol>${c.dx.map((d, i) => `<li class="${i === 0 ? 'right' : ''}">${esc(d)}${i === 0 ? ' (correct)' : ''}</li>`).join('')}</ol>
+      <p><b>Correct disposition:</b> ${dispo(c.dispo)}${c.ok && c.ok.length ? ` · also acceptable: ${c.ok.map(dispo).join(', ')}` : ''}${c.days ? ` · down slip length in game: ${c.days} days` : ''}</p>
+      <p><b>Plan:</b> ${esc(c.tx)}</p><p><b>Teaching point:</b> ${esc(c.teach)}</p>
+      ${c.incident ? `<p><b>If cleared unsafely:</b> ${esc(c.incident)}</p>` : ''}
+      <div class="src">Source to check: ${esc(c.source)}</div></div>`;
+  });
+
+  html += `<h2>FDME findings (${D.FDME.length})</h2><p class="intro">About half of FDMEs are normal. Normal results: ${Object.entries(D.FDME_NORMAL.checks).map(([k, v]) => `<b>${esc(D.FDME_CHECKS[k].name)}</b>: ${esc(v)}`).join(' · ')}</p>`;
+  D.FDME.forEach(f => {
+    html += `<div class="card">${status(f.reviewed)}<h3>${esc(f.title)}</h3>
+      <div class="meta">id ${esc(f.id)} · revealed by: ${f.key ? esc(D.FDME_CHECKS[f.key].name) : 'questionnaire'}${f.needs ? ' (needs ' + esc(D.NEEDS_NAME[f.needs]) + ')' : ''}</div>
+      <p><b>Questionnaire:</b> ${esc(f.q)}</p>
+      <table>${Object.entries(f.checks).map(([k, v]) => `<tr><th>${esc(D.FDME_CHECKS[k].name)}</th><td>${esc(v)}</td></tr>`).join('')}</table>
+      <p><b>Correct decision:</b> ${dispo(f.correct)}${f.ok && f.ok.length ? ` · also acceptable: ${f.ok.map(dispo).join(', ')}` : ''}</p>
+      <p><b>Teaching point:</b> ${esc(f.teach)}</p><div class="src">Source to check: ${esc(f.source)}</div></div>`;
+  });
+
+  html += `<h2>Flights</h2>`;
+  D.FLIGHTS.forEach(f => {
+    html += `<div class="card"><h3>${esc(f.title)}</h3><p>${f.lines.map(([w, t]) => (w === 'narr' ? '' : `<b>${esc(w)}:</b> `) + esc(t)).join('<br>')}</p>
+      <p><b>Choice:</b> ${esc(f.choice.prompt)}</p><ul>${f.choice.options.map(o => `<li><b>${esc(o.label)}</b>: ${esc(o.result)}</li>`).join('')}</ul>
+      <p><b>Teaching point:</b> ${esc(f.teach)}</p></div>`;
+  });
+
+  html += `<h2>Hard landing and safety board</h2>`;
+  [['Hard landing', D.STORY.incident], ['Safety board', D.STORY.board]].forEach(([t, steps]) => {
+    html += `<div class="card"><h3>${t}</h3>${steps.map(s => `<p><b>${esc(s.text)}</b></p><ul>${s.options.map(o => `<li class="${o.good ? 'right' : ''}">${esc(o.label)}${o.good ? ' (correct)' : ''}: ${esc(o.result)}</li>`).join('')}</ul>`).join('')}</div>`;
+  });
+  html += `<div class="card"><h3>Heat injury brief</h3><p>${D.STORY.heatBrief.map(p => esc(p.text)).join('<br>')}</p></div>`;
+
+  html += `<h2>Glossary</h2><table>${D.GLOSSARY.map(([t, d]) => `<tr><th>${esc(t)}</th><td>${esc(d)}</td></tr>`).join('')}</table>`;
+  out.innerHTML = html;
+})();
+</script>
+</body>
+</html>

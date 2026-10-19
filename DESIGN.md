@@ -4,6 +4,24 @@ Version 0.1 (Phase 0). This is the reference every feature gets checked against.
 
 ---
 
+## Status
+
+**Phase 0 (design): done.** **Phase 1 (core loop): done.** Built in Phase 1:
+- Army conversion: Kestrel AAF map, UH-60/AH-64/HH-60 aircraft, CPT player, down/up slips
+- Character creation (name, skin, hair, pronouns)
+- Structured sick-call cases (history, exam, tests, diagnosis, disposition) with low-trust answers that hide key facts
+- Trust per aircrew member and per battalion, Aviation Readiness, command confidence
+- Delayed consequences: unsafe clearances cause safety reports days later; overcautious groundings cost trust and readiness
+- FDMEs with checks and hidden findings, overdue FDMEs ground aircrew
+- Flying with crews (3 scripted flights, then generated ones)
+- Clinic budget and 6 upgrades, personal wallet, payday, DFAC gifts
+- 3 skill tracks with unlocks, 6 cast members with 2 heart scenes and a perk each
+- Weekly brief, Saturday events, and the full story arc: heat brief, fatigue warning, hard landing, safety board, year-end inspection with graded ending and epilogues, then Year 2
+- Journal, glossary, objective hints, autosave on sleep, touch controls
+- `review.html` for clinical review and an automated full-year playthrough test
+
+Content so far: 20 cases, 10 FDME findings, 3 scripted flights, 8 events. Phase 2 grows this toward the §11 targets. Down slips last a third of their real-world length because a year is 56 days. Interiors and sound are deferred to Phase 3.
+
 ## 1. Pitch
 
 You're a newly minted Army flight surgeon assigned to an aviation brigade at a sleepy Army airfield. Over one year you keep your aircrews healthy and flying, earn their trust one sick call at a time, fly with the crews, build up a run-down aviation medicine clinic, and get through the brigade's toughest year in a long time.
