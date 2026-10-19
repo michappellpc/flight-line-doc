@@ -276,7 +276,7 @@ function nextPatient() {
   spend(6, 10);
   renderCase();
 }
-function histLimit() { return 2 + (level('clin') >= 2 ? 1 : 0) + (has('room2') ? 1 : 0); }
+function histLimit() { return 2 + (level('clin') >= 2 ? 1 : 0) + (has('room2') ? 1 : 0) + (hearts('okafor') >= 8 ? 1 : 0); }
 function examLimit() { return 2 + (level('clin') >= 4 ? 1 : 0) + (has('room2') ? 1 : 0); }
 function answerOf(h) { return CS.low && h.low ? h.low : h.a; }
 function renderCase() {
@@ -486,7 +486,7 @@ function startFlight() {
   spend(flightCost(), 180);
   S.hours += 2; S.week.flights++;
   D.ROSTER.filter(p => p.unit === f.unit).forEach(p => adjTrust(p.id, 3));
-  f.crew.forEach(id => { adjTrust(id, 4); if (D.CAST[id]) addFriend(id, 40); });
+  f.crew.forEach(id => { adjTrust(id, 4); if (D.CAST[id]) addFriend(id, 25); });
   gainXp('lead', 2);
   show(f.title, b => {
     const script = el('div', { class: 'script' }); b.appendChild(script);
@@ -516,7 +516,7 @@ function startFlight() {
 function weeklyBrief(auto) {
   const w = S.week, r = readiness();
   const perf = w.seen ? (w.dx + w.dispo) / (2 * w.seen) : 0.7;
-  let budget = 30 + Math.round(r / 4) + (level('lead') >= 2 ? 10 : 0) + (hearts('park') >= 4 ? 10 : 0) - w.incidents * 5 + (w.flights ? 5 : 0);
+  let budget = 20 + Math.round(r / 5) + (perf >= .75 ? 10 : 0) + (level('lead') >= 2 ? 10 : 0) + (hearts('park') >= 4 ? 10 : 0) - w.incidents * 8 + (w.flights ? 5 : 0);
   if (auto) budget = Math.round(budget / 2);
   budget = Math.max(10, budget);
   S.budget += budget;
@@ -650,7 +650,7 @@ function eventHere(loc) {
 function joinEvent(e) {
   S.events[e.id + S.day] = true;
   D.ROSTER.forEach(p => adjTrust(p.id, 2));
-  Object.keys(D.CAST).forEach(id => addFriend(id, 30));
+  Object.keys(D.CAST).forEach(id => addFriend(id, 20));
   gainXp('lead', 3); S.min += 120; S.energy = Math.min(S.maxE + 25, S.energy + 10);
   info(e.title, `${esc(e.text)}<br><br>Everyone's trust and friendship went up a little.`);
 }
@@ -774,6 +774,10 @@ function talk(id) {
   if (sc) {
     S.scenes[id + sc.hearts] = true;
     if (sc.schedule) S.pending.push({ day: S.day + 1, pid: sc.schedule.pid, caseId: sc.schedule.caseId });
+    const fx = sc.effect || {};
+    if (fx.maxE) S.maxE += fx.maxE;
+    if (fx.command) adjCommand(fx.command);
+    if (fx.unitTrust) D.ROSTER.filter(p => p.unit === fx.unitTrust[0]).forEach(p => adjTrust(p.id, fx.unitTrust[1]));
     show(sc.title, b => {
       sc.lines.forEach(l => para(b, esc(l)));
       if (sc.perk) para(b, `<b>New perk:</b> ${esc(sc.perk)}`, 'note-box');
@@ -782,7 +786,7 @@ function talk(id) {
     return;
   }
   const first = !S.talked[id];
-  if (first) { S.talked[id] = true; addFriend(id, 20); if (PEOPLE[id]) adjTrust(id, 1); }
+  if (first) { S.talked[id] = true; addFriend(id, 15); if (PEOPLE[id]) adjTrust(id, 1); }
   const pool = (c.lines[seasonKey()] || []).concat(c.lines.any);
   const line = pool[(S.day + strHash(id)) % pool.length];
   show(c.title, b => {
@@ -790,8 +794,8 @@ function talk(id) {
     para(b, heartsHtml(id) + (first ? ' Friendship grew.' : ' Already chatted today.'), 'tag');
     if (PEOPLE[id]) para(b, `Trust: ${trustWord(S.people[id].trust)}` + (S.people[id].down ? ` · on a down slip (${esc(S.people[id].down.reason)})` : ''), 'tag');
     const gifted = S.gifted[id];
-    if (S.items.coffee) opt(b, 'Give a coffee', () => { S.items.coffee--; S.gifted[id] = true; addFriend(id, 35); toast('They appreciate the coffee.'); talk(id); }, { disabled: gifted, note: gifted ? 'one gift a day' : '' });
-    if (S.items.donut) opt(b, 'Give donuts', () => { S.items.donut--; S.gifted[id] = true; addFriend(id, 70); if (PEOPLE[id]) adjTrust(id, 2); toast('Donuts! Instant friendship.'); talk(id); }, { disabled: gifted, note: gifted ? 'one gift a day' : '' });
+    if (S.items.coffee) opt(b, 'Give a coffee', () => { S.items.coffee--; S.gifted[id] = true; addFriend(id, 25); toast('They appreciate the coffee.'); talk(id); }, { disabled: gifted, note: gifted ? 'one gift a day' : '' });
+    if (S.items.donut) opt(b, 'Give donuts', () => { S.items.donut--; S.gifted[id] = true; addFriend(id, 45); if (PEOPLE[id]) adjTrust(id, 2); toast('Donuts! Instant friendship.'); talk(id); }, { disabled: gifted, note: gifted ? 'one gift a day' : '' });
     opt(b, 'Bye', closeModal);
   }, { look: lookFor(id), sub: c.sub, closable: true });
 }
@@ -816,7 +820,7 @@ function journal(tab = 'today') {
       c.appendChild(el('table', { class: 'roster', html: `<tr><th>Aircrew</th><th>Trust</th><th>Status</th></tr>${rows}` }));
     } else if (tab === 'friends') {
       para(c, Object.keys(D.CAST).map(id => `<b>${esc(D.CAST[id].title)}</b> ${heartsHtml(id)}<br><span class="tag">${esc(D.CAST[id].sub)}</span>`).join('<br><br>'));
-      para(c, 'Talk once a day and give coffee or donuts from the DFAC. New scenes unlock at 2 and 4 hearts.', 'tag');
+      para(c, 'Talk once a day and give coffee or donuts from the DFAC. New scenes unlock at 2, 4, 6 and 8 hearts.', 'tag');
     } else if (tab === 'skills') {
       para(c, Object.keys(SKILL_NAME).map(k => {
         const l = level(k), next = XP_LEVELS[l];

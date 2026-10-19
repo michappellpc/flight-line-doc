@@ -55,6 +55,8 @@ FLD.CAST = {
     scenes: [
       { hearts: 2, title: 'The application', lines: [`A stack of forms sits on the clinic counter.`, `Okafor: "Physician assistant program. I keep starting the essay and deleting it."`, `You offer to read a draft.`, `Okafor: "Really? Okay. Don't laugh at the part about the coffee pot."`] },
       { hearts: 4, title: 'The letter', lines: [`Okafor: "Doc. Would you write my letter of recommendation?"`, `You say yes before Okafor finishes the sentence.`, `Okafor: "I owe you a coffee. A real one. Not from that pot."`], perk: `Okafor has fresh coffee waiting every morning: +10 energy at the start of each day.` },
+      { hearts: 6, title: 'The interview', lines: [`Okafor bursts into your office waving a printout.`, `Okafor: "They want to interview me! For PA school! Me!"`, `You spend the evening running mock interviews. Asked "why medicine," Okafor tells a story about talking a crew chief out of flying sick. It's a good answer.`] },
+      { hearts: 8, title: 'One more year', lines: [`Okafor: "Report date is next fall. So I've got one more year to train my replacement."`, `Okafor: "I'm going to make them read every APL. Twice. Then clean the coffee pot."`, `Okafor: "Thanks, Doc. For treating me like part of the team, not part of the furniture."`], perk: `Okafor's triage is so good that you can ask one more history question per patient.` },
     ],
   },
   rivera: {
@@ -70,6 +72,8 @@ FLD.CAST = {
     scenes: [
       { hearts: 2, title: 'The logbook', lines: [`Rivera is sitting on the hangar steps with a worn logbook.`, `Rivera: "Four thousand hours. My first IP signed this page. Grumpiest person I ever met."`, `Rivera: "Now I'm the grumpy one. Funny how that works."`] },
       { hearts: 4, title: 'The honest answer', lines: [`Rivera: "Okay. Truth? My hands go numb on long flights. Has been for a while."`, `Rivera: "I didn't say anything. Figured you'd pull my wings."`, `You tell Rivera to come to sick call tomorrow. You'll look at it properly.`, `Rivera: "Huh. I should've said something a year ago."`], perk: `Flying with crews costs you less energy.`, schedule: { pid: 'rivera', caseId: 'hand-numb' } },
+      { hearts: 6, title: 'The checkride', lines: [`Rivera: "I give checkrides all year. Taking my own still makes my palms sweat."`, `You quiz Rivera on emergency procedures over coffee until it's automatic.`, `Rivera passes the next day. Rivera: "Don't tell the students I was nervous."`] },
+      { hearts: 8, title: 'Old wings', lines: [`Rivera pins a worn pair of aviator wings to your desk lamp.`, `Rivera: "My first IP gave me these. Said to pass them on to someone who keeps crews flying."`, `Rivera: "You're not a pilot. But you get it."`], perk: `The whole Assault battalion heard about the wings: their trust in you rises.`, effect: { unitTrust: ['assault', 6] } },
     ],
   },
   nguyen: {
@@ -77,6 +81,7 @@ FLD.CAST = {
     sched: [[360, 'flight'], [1020, 'hq'], [1140, 'dfac']],
     lines: {
       any: [`I'm going for the instructor slot next year. So no, I can't be sick.`, `Apache pilots don't get tired, Doc. We get "mission focused."`],
+      spring: [`New pilots in the battalion. They look twelve. Was I ever that young?`],
       summer: [`Gunnery in July. The front seat is a greenhouse.`],
       fall: [`Third late cycle this week. I'm fine. Totally fine.`],
       winter: [`After this year, I'm learning to say when I'm tired.`],
@@ -84,6 +89,8 @@ FLD.CAST = {
     scenes: [
       { hearts: 2, title: 'Two seats', lines: [`Nguyen shows you the Apache's tandem cockpit.`, `Nguyen: "Gunner up front, pilot in back. You have to trust the person behind you completely."`, `Nguyen: "Kind of like with a doctor, I guess."`] },
       { hearts: 4, title: 'Off the clock', lines: [`Nguyen: "I booked leave. Actual leave. My mom cried."`, `Nguyen: "You were right about the sleep thing. Don't let it go to your head."`], perk: `Trust grows faster with the Attack battalion.` },
+      { hearts: 6, title: 'The sleep log', lines: [`Nguyen shows you a battered notebook.`, `Nguyen: "Sleep log. Seven hours, three nights straight. Don't make a big deal out of it."`, `You make a small deal out of it. Nguyen pretends to be annoyed and fails.`] },
+      { hearts: 8, title: 'Instructor', lines: [`Nguyen: "I got the instructor slot."`, `Nguyen: "First thing I'm teaching the new pilots: if the doc says you're tired, you're tired."`], perk: `The Attack battalion starts taking crew rest seriously: their trust in you rises.`, effect: { unitTrust: ['attack', 6] } },
     ],
   },
   brooks: {
@@ -93,11 +100,14 @@ FLD.CAST = {
       any: [`Dustoff! The only taxi service with a hoist.`, `Need a hand at sick call? I'm cheaper than a med tech. I accept payment in donuts.`],
       summer: [`Hoist training in this heat should count as a sauna.`],
       fall: [`Mass-casualty drills next week. I hate how good we're getting at them.`],
+      spring: [`Spring means bees on the flight line. I've got the EpiPens. Just saying.`],
       winter: [`Cold-weather kit check. I found three left gloves and zero right ones.`],
     },
     scenes: [
       { hearts: 2, title: 'The aid bag', lines: [`Brooks: "Want to see the aid bag? Everything has a place. Even the tape has a place."`, `Brooks shows you every pocket, proudly.`, `Brooks: "If we're ever on scene together, I'll hand you stuff before you ask."`] },
       { hearts: 4, title: 'The first call', lines: [`Brooks, quietly: "First medevac I ever flew, I froze for a second."`, `Brooks: "My instructor said a second is fine. It's the next one that counts."`, `Brooks: "I think about that a lot. Anyway. Donut?"`], perk: `Trust grows faster with Dustoff company.` },
+      { hearts: 6, title: 'Meet Gerald', lines: [`Brooks formally introduces you to Gerald, the hoist training dummy.`, `Brooks: "Gerald has been rescued 412 times. Gerald has never once said thank you."`, `Brooks: "The Dustoff crews voted. You're an honorary member. You get a patch and Gerald's respect."`] },
+      { hearts: 8, title: 'Why the jokes', lines: [`Brooks: "You know why I joke all the time?"`, `Brooks: "Because the calls that aren't funny are really not funny. Laughing keeps the bag packed."`, `Brooks: "Thanks for laughing at my bad jokes, Doc. Even the Gerald ones."`], perk: `Dustoff company trusts you like one of their own.`, effect: { unitTrust: ['dustoff', 6] } },
     ],
   },
   park: {
@@ -114,6 +124,8 @@ FLD.CAST = {
     scenes: [
       { hearts: 2, title: 'The old photo', lines: [`COL Park is looking at a framed photo of an old aircrew.`, `Park: "My first platoon. Our flight surgeon grounded me once, and I was furious for a week."`, `Park: "Turned out to be a kidney stone. They were right."`] },
       { hearts: 4, title: 'Straight talk', lines: [`Park: "When you got here, I thought you'd ground half my brigade."`, `Park: "You grounded the right ones. I've told the battalion commanders to listen to you."`], perk: `+10 clinic budget at each weekly brief.` },
+      { hearts: 6, title: 'The red pen', lines: [`COL Park has the flight schedule spread across the desk, red pen in hand.`, `Park: "You keep telling me sleep is a safety system. Show me where to cut."`, `You spend an hour moving cycles around. Park signs it without changing a line.`], perk: `Command confidence rises.`, effect: { command: 5 } },
+      { hearts: 8, title: 'An appointment', lines: [`Park: "This is my last command. I retire next summer."`, `Park: "Thirty years of being too proud to see a doctor. I made an appointment for a real physical."`, `Park: "Don't look so smug, Doc."`], effect: { command: 5 } },
     ],
   },
   bell: {
@@ -122,12 +134,16 @@ FLD.CAST = {
     sched: [[360, 'chapel'], [720, 'dfac'], [800, 'chapel']],
     lines: {
       any: [`The chapel is open to everyone, Doc. Even just for sitting.`, `I hear a lot of things. I keep all of them.`],
+      spring: [`Spring is a good season for fresh starts. Even for clinics.`],
+      summer: [`Hot days make short tempers. My door is cool and quiet.`],
       fall: [`Since the hard landing, a lot of people have stopped by. You can too.`],
       winter: [`The holidays are hard for some of our folks. Keep an eye out.`],
     },
     scenes: [
       { hearts: 2, title: 'Two cups', lines: [`Chaplain Bell is on the chapel bench with two cups of tea.`, `Bell: "I always make two. Someone usually turns up."`, `You sit. Neither of you says much. It's nice.`] },
       { hearts: 4, title: 'Who heals the healer', lines: [`Bell: "You carry a lot of other people's worries, Doc."`, `Bell: "Where do you put yours?"`, `You talk for a while. It helps more than you expected.`], perk: `Quiet moments at the chapel restore more energy.` },
+      { hearts: 6, title: 'An unsigned card', lines: [`Bell: "Somebody left this on the bench for you."`, `It's a thank-you card addressed to "the doc." Unsigned.`, `Bell: "I don't know who it's from. I suspect it's from a few people."`] },
+      { hearts: 8, title: 'Your mug', lines: [`Bell hands you tea in a mug with your name painted on it.`, `Bell: "You're a regular now. Regulars get mugs."`, `Bell: "Rest isn't a reward for finishing the work, Doc. It's part of the work."`], perk: `Your max energy goes up by 10.`, effect: { maxE: 10 } },
     ],
   },
 };

@@ -21,12 +21,12 @@ FLD.DISPO = {
 };
 
 FLD.UPGRADES = [
-  { id: 'espresso', name: 'Espresso machine',          cost: 30, desc: '+15 energy every morning. The old coffee pot retires with honors.' },
-  { id: 'vision',   name: 'New vision tester',         cost: 50, desc: 'Enables detailed vision testing at FDMEs.' },
-  { id: 'booth',    name: 'Fix the hearing booth',     cost: 60, desc: 'Enables audiograms and tympanometry.' },
-  { id: 'okafor',   name: 'Triage course for SSG Okafor', cost: 70, desc: 'Okafor pre-screens each patient and gets the honest version of one key answer.' },
-  { id: 'lab',      name: 'Point-of-care lab',         cost: 80, desc: 'Enables urinalysis, blood counts and FDME labs.' },
-  { id: 'room2',    name: 'Second exam room',          cost: 90, desc: '+1 history question and +1 exam step per patient.' },
+  { id: 'espresso', name: 'Espresso machine',          cost: 40, desc: '+15 energy every morning. The old coffee pot retires with honors.' },
+  { id: 'vision',   name: 'New vision tester',         cost: 70, desc: 'Enables detailed vision testing at FDMEs.' },
+  { id: 'booth',    name: 'Fix the hearing booth',     cost: 90, desc: 'Enables audiograms and tympanometry.' },
+  { id: 'okafor',   name: 'Triage course for SSG Okafor', cost: 100, desc: 'Okafor pre-screens each patient and gets the honest version of one key answer.' },
+  { id: 'lab',      name: 'Point-of-care lab',         cost: 110, desc: 'Enables urinalysis, blood counts and FDME labs.' },
+  { id: 'room2',    name: 'Second exam room',          cost: 130, desc: '+1 history question and +1 exam step per patient.' },
 ];
 FLD.NEEDS_NAME = { booth: 'the hearing booth', lab: 'the point-of-care lab', vision: 'the new vision tester' };
 

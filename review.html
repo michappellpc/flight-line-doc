@@ -19,6 +19,7 @@
   .key { color: #2e6b22; font-weight: bold; }
   .low { color: #8a3b0a; }
   ol { margin: 4px 0; } .right { font-weight: bold; color: #2e6b22; }
+  .rnote { background: #fff3c4; border-left: 4px solid #e0a800; padding: 4px 8px; margin: 6px 0; }
   .src { font-size: .9em; color: #555; border-top: 1px dashed #d9c9a0; margin-top: 6px; padding-top: 4px; }
   @media print { body { background: #fff; } .card { border-color: #999; } }
 </style>
@@ -29,8 +30,13 @@
 <div id="out"></div>
 <script src="js/data/people.js"></script>
 <script src="js/data/cases.js"></script>
+<script src="js/data/cases-flight.js"></script>
+<script src="js/data/cases-clinic.js"></script>
+<script src="js/data/cases-fitness.js"></script>
 <script src="js/data/fdme.js"></script>
+<script src="js/data/fdme-more.js"></script>
 <script src="js/data/story.js"></script>
+<script src="js/data/flights-more.js"></script>
 <script>
 (() => {
   const D = window.FLD, out = document.getElementById('out');
@@ -52,7 +58,7 @@
       <p><b>Correct disposition:</b> ${dispo(c.dispo)}${c.ok && c.ok.length ? ` · also acceptable: ${c.ok.map(dispo).join(', ')}` : ''}${c.days ? ` · down slip length in game: ${c.days} days` : ''}</p>
       <p><b>Plan:</b> ${esc(c.tx)}</p><p><b>Teaching point:</b> ${esc(c.teach)}</p>
       ${c.incident ? `<p><b>If cleared unsafely:</b> ${esc(c.incident)}</p>` : ''}
-      <div class="src">Source to check: ${esc(c.source)}</div></div>`;
+      ${c.reviewNote ? `<div class="rnote"><b>Author's note for the reviewer:</b> ${esc(c.reviewNote)}</div>` : ''}<div class="src">Source to check: ${esc(c.source)}</div></div>`;
   });
 
   html += `<h2>FDME findings (${D.FDME.length})</h2><p class="intro">About half of FDMEs are normal. Normal results: ${Object.entries(D.FDME_NORMAL.checks).map(([k, v]) => `<b>${esc(D.FDME_CHECKS[k].name)}</b>: ${esc(v)}`).join(' · ')}</p>`;
@@ -62,7 +68,7 @@
       <p><b>Questionnaire:</b> ${esc(f.q)}</p>
       <table>${Object.entries(f.checks).map(([k, v]) => `<tr><th>${esc(D.FDME_CHECKS[k].name)}</th><td>${esc(v)}</td></tr>`).join('')}</table>
       <p><b>Correct decision:</b> ${dispo(f.correct)}${f.ok && f.ok.length ? ` · also acceptable: ${f.ok.map(dispo).join(', ')}` : ''}</p>
-      <p><b>Teaching point:</b> ${esc(f.teach)}</p><div class="src">Source to check: ${esc(f.source)}</div></div>`;
+      <p><b>Teaching point:</b> ${esc(f.teach)}</p>${f.reviewNote ? `<div class="rnote"><b>Author's note for the reviewer:</b> ${esc(f.reviewNote)}</div>` : ''}<div class="src">Source to check: ${esc(f.source)}</div></div>`;
   });
 
   html += `<h2>Flights</h2>`;
