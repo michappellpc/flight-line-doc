@@ -152,7 +152,7 @@ let toastTimer = 0;
 function toast(msg, ms = 3200) { const t = $('toast'); t.textContent = msg; t.style.display = 'block'; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', ms); }
 
 // ---------- modal ----------
-let modalOpen = false, modalKeys = [];
+let modalOpen = false, modalKeys = [], introOpen = false;
 function modal(title, body, choices) {
   modalOpen = true; modalKeys = [];
   const box = $('box'); box.innerHTML = '';
@@ -169,7 +169,7 @@ function modal(title, body, choices) {
   $('modal').style.display = 'flex';
   const first = box.querySelector('button'); if (first) first.focus();
 }
-function closeModal() { modalOpen = false; $('modal').style.display = 'none'; }
+function closeModal() { modalOpen = false; introOpen = false; $('modal').style.display = 'none'; }
 function info(title, body, then) { modal(title, body, [{ label: 'OK', fn: then }]); }
 
 // ---------- game logic ----------
@@ -315,6 +315,7 @@ const keys = {};
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if (modalOpen) {
+    if (introOpen && /^(w|a|s|d|e|arrowup|arrowdown|arrowleft|arrowright| |enter)$/.test(k)) { e.preventDefault(); closeModal(); return; }
     if (/^[1-9]$/.test(k) && modalKeys[+k - 1]) { e.preventDefault(); modalKeys[+k - 1](); }
     if (k === 'escape') closeModal();
     return;
@@ -650,7 +651,8 @@ if (S.day === 1 && S.stats.treated === 0 && S.min === 360) {
     '<p><b>Move:</b> WASD or arrows. <b>Interact:</b> E, Space, or the E button.</p>' +
     '<p>See patients at the <b>Sick Call</b>, check aircrew at the <b>Flight Line</b>, restock at <b>Supply</b>, and don\'t forget to eat, train, study and sleep. Befriend your teammates for daily perks.</p>' +
     '<p class="tag">Fictional game for fun and learning. Not medical advice.</p>',
-    [{ label: 'Start the day', fn: null }]);
+    [{ label: 'Start the day (or press any move key)', fn: null }]);
+  introOpen = true;
 }
 buildBG();
 requestAnimationFrame(frame);
