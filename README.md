@@ -40,6 +40,7 @@ The playthrough test plays a full year through the real UI and fails on any page
 ```
 NODE_PATH=$(npm root -g) node tests/playthrough.js 62 - random
 NODE_PATH=$(npm root -g) node tests/playthrough.js 62 - smart
+NODE_PATH=$(npm root -g) node tests/save-migration.js
 ```
 Needs Playwright with Chromium. Set `CHROMIUM` to a browser path if Playwright's own isn't installed. Replace `-` with a folder path to save screenshots.
 

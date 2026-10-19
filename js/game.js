@@ -111,7 +111,23 @@ function newState(o) {
   };
 }
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
-function load() { try { const j = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return j && j.v === 1 ? j : null; } catch (e) { return null; } }
+function load() { try { const j = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return j && j.v === 1 ? migrate(j) : null; } catch (e) { return null; } }
+// Bring saves from older versions up to date: new fields get defaults, new aircrew join the roster.
+function migrate(old) {
+  const fresh = newState({ name: old.name || 'Doc', pron: old.pron || 'they', skin: (old.look || {}).skin || SKINS[1], hair: (old.look || {}).hair || HAIRS[1] });
+  const s = Object.assign({}, fresh, old);
+  ['items', 'xp', 'week', 'total'].forEach(k => { s[k] = Object.assign({}, fresh[k], old[k]); });
+  s.people = Object.assign({}, old.people);
+  D.ROSTER.forEach(p => {
+    const f = fresh.people[p.id];
+    if (!s.people[p.id]) { s.people[p.id] = f; if (s.day > f.fdmeDue) f.fdmeDue = s.day + 3 + Math.floor(random() * 10); }
+    else s.people[p.id] = Object.assign({}, f, s.people[p.id]);
+  });
+  s.queue = (s.queue || []).filter(q => PEOPLE[q.pid] && CASE[q.caseId]);
+  s.pending = (s.pending || []).filter(q => PEOPLE[q.pid] && CASE[q.caseId]);
+  s.scheduled = (s.scheduled || []).filter(q => PEOPLE[q.pid]);
+  return s;
+}
 
 // ---------- derived ----------
 const yday = () => ((S.day - 1) % END_DAY) + 1;        // day within the year (loops after the ending)
@@ -987,8 +1003,22 @@ function hud() {
 
 // ---------- loop ----------
 let last = performance.now();
+let crashed = false;
 function frame(now) {
   const dt = Math.min(.05, (now - last) / 1000); last = now;
+  try { tick(now, dt); } catch (e) { if (!crashed) { crashed = true; showCrash(e); } }
+  requestAnimationFrame(frame);
+}
+function showCrash(e) {
+  console.error(e);
+  show('Something went wrong', b => {
+    para(b, 'The game hit an error and paused. Your last save is from when you last slept.');
+    para(b, esc(e && e.message || e), 'tag');
+    opt(b, 'Reload the game', () => location.reload(), { cls: 'hi' });
+    opt(b, 'Start a new game (erases the save)', () => { try { localStorage.removeItem(SAVE_KEY); } catch (x) {} location.reload(); });
+  });
+}
+function tick(now, dt) {
   if (S) {
     if (!modalOpen) {
       move(dt); updateNpcs(dt);
@@ -1003,7 +1033,6 @@ function frame(now) {
     draw();
     if (now - hudTick > 150) { hudTick = now; hud(); }
   }
-  requestAnimationFrame(frame);
 }
 
 // ---------- start ----------
