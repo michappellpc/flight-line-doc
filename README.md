@@ -11,7 +11,9 @@ See [DESIGN.md](DESIGN.md) for the game design: pillars, systems, story, content
 - Move: WASD or arrow keys (on-screen d-pad on touch devices)
 - Interact: E, Space, or the on-screen E button
 - Pick options: click, or press 1–9
-- Journal: J (aircrew roster, friends, skills, glossary, settings)
+- Journal: J (aircrew roster, friends, skills, glossary, settings, sound)
+- Mute: M
+- Walk into the clinic, Brigade HQ, the chapel and your quarters through their doors; walk out the door at the bottom
 - Progress saves in your browser when you sleep
 
 ## Project layout
@@ -19,7 +21,8 @@ See [DESIGN.md](DESIGN.md) for the game design: pillars, systems, story, content
 |---|---|
 | `index.html` | Page shell and styles |
 | `js/game.js` | Game engine and systems |
-| `js/art.js` | All pixel art, drawn in code |
+| `js/art.js` | All pixel art, drawn in code: map, seasons, interiors, characters, aircraft |
+| `js/audio.js` | Procedural sound effects, ambience and music (Web Audio, no files) |
 | `js/data/cases*.js` | Sick-call cases (50, across four files) |
 | `js/data/fdme*.js` | FDME findings (20) |
 | `js/data/flights-more.js` | Additional scripted flights |

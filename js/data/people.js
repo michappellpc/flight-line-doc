@@ -129,7 +129,7 @@ FLD.CAST = {
   park: {
     title: 'COL Park', sub: 'Brigade commander',
     look: { skin: '#e0ac85', hair: '#d8d8d8', uniform: 'ocp' },
-    sched: [[360, 'gym'], [480, 'hq'], [1140, 'quarters']],
+    sched: [[360, 'gym'], [480, 'hqdesk'], [1140, 'quarters']],
     lines: {
       any: [`Readiness is a number, Doc. Behind it are people. Don't let me forget that.`, `Brief me Fridays. Bring the truth, not just slides.`],
       spring: [`This brigade is proud. Sometimes too proud to see a doctor.`],

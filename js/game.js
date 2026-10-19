@@ -17,6 +17,7 @@ const SKILL_UNLOCK = {
 const XP_LEVELS = [0, 12, 30, 55, 90, 140];
 const $ = id => document.getElementById(id);
 const cv = $('c'), ctx = cv.getContext('2d');
+const sfx = n => { if (window.FLD_AUDIO) FLD_AUDIO.play(n); };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 let random = Math.random;
@@ -60,18 +61,87 @@ const world = {
   decor: [{ type: 'flag', x: 11, y: 3 }, { type: 'sock', x: 18, y: 10 }],
 };
 const STATION_BY_ID = Object.fromEntries(world.stations.map(s => [s.id, s]));
-const solids = [];
-world.buildings.forEach(b => solids.push({ x: b.x * T, y: b.y * T, w: b.w * T, h: b.h * T }));
-world.stations.forEach(s => solids.push({ x: s.x * T, y: s.y * T, w: T, h: T }));
-world.trees.forEach(t => solids.push({ x: t[0] * T + 4, y: t[1] * T + 8, w: 8, h: 8 }));
-world.helis.forEach(h => solids.push({ x: h.x * T, y: h.y * T + 4, w: 32, h: 10 }));
-world.decor.forEach(d => solids.push({ x: d.x * T + 5, y: d.y * T + 10, w: 5, h: 6 }));
-// NPC zones: walkable rectangles on the paths (x, y, w, h in pixels)
-const ZONES = {
-  clinic: [16, 84, 90, 20], hq: [120, 84, 50, 20], chapel: [186, 84, 50, 20], quarters: [250, 84, 62, 20],
-  dfac: [10, 178, 60, 8], gym: [90, 178, 60, 8], flight: [180, 178, 120, 8],
+// Interiors, in tiles. Furniture is solid (except rugs). Stations are the things you can use.
+const ROOMS = {
+  clinic: {
+    floor: 'lino', wall: '#e8e1d0', door: [9, 2],
+    decor: [{ type: 'window', x: 1 }, { type: 'window', x: 3 }, { type: 'board', x: 7, w: 2 }, { type: 'eyechart', x: 9 }, { type: 'cross', x: 13 }, { type: 'clock', x: 15 }, { type: 'cert', x: 16 }, { type: 'poster', x: 17, color: '#3b9a5a' }],
+    furniture: [
+      { type: 'examtable', x: 2, y: 4, w: 2 }, { type: 'curtain', x: 5, y: 3, h: 3 }, { type: 'desk', x: 7, y: 4, w: 2 }, { type: 'vision', x: 9, y: 4 },
+      { type: 'booth', x: 11, y: 3, w: 2, h: 2 }, { type: 'curtain', x: 14, y: 3, h: 3 }, { type: 'room2', x: 15, y: 4, w: 2 },
+      { type: 'labbench', x: 1, y: 9, w: 3 }, { type: 'counter', x: 6, y: 9, w: 6 }, { type: 'coffee', x: 13, y: 9 }, { type: 'desk', x: 15, y: 9, w: 2 }, { type: 'shelf', x: 17, y: 9, w: 2 },
+      { type: 'plant', x: 1, y: 12 }, { type: 'chairs', x: 2, y: 12, w: 3 }, { type: 'chairs', x: 14, y: 12, w: 3 }, { type: 'plant', x: 18, y: 12 },
+    ],
+    stations: [
+      { id: 'front', name: 'Front desk', x: 6, y: 9, w: 6 },
+      { id: 'exam', name: 'Exam room: sick call', x: 2, y: 4, w: 2 },
+      { id: 'fdme', name: 'FDME station', x: 7, y: 4, w: 2 },
+      { id: 'board', name: 'Clinic upgrade plans', x: 7, y: 2, w: 2 },
+      { id: 'office', name: 'Your desk: study', x: 15, y: 9, w: 2 },
+      { id: 'coffee', name: 'Coffee', x: 13, y: 9 },
+      { id: 'booth', name: 'Hearing booth', x: 11, y: 3, w: 2, h: 2 },
+      { id: 'vision', name: 'Vision tester', x: 9, y: 4 },
+      { id: 'lab', name: 'Lab bench', x: 1, y: 9, w: 3 },
+    ],
+  },
+  hq: {
+    floor: 'tile', wall: '#cfc6a8', door: [9, 2],
+    decor: [{ type: 'window', x: 2 }, { type: 'board', x: 4, w: 2 }, { type: 'flagwall', x: 8, w: 3 }, { type: 'clock', x: 12 }, { type: 'window', x: 15 }, { type: 'poster', x: 17, color: '#c23b3b' }],
+    furniture: [
+      { type: 'plant', x: 1, y: 4 }, { type: 'flagstand', x: 6, y: 4 }, { type: 'bigdesk', x: 8, y: 5, w: 3 }, { type: 'flagstand', x: 12, y: 4, unit: true },
+      { type: 'filing', x: 17, y: 4 }, { type: 'filing', x: 18, y: 4 }, { type: 'maptable', x: 2, y: 9, w: 3, h: 2 }, { type: 'chairs', x: 14, y: 11, w: 3 }, { type: 'plant', x: 18, y: 12 },
+    ],
+    stations: [
+      { id: 'park', name: `COL Park's desk`, x: 8, y: 5, w: 3 },
+      { id: 'bulletin', name: 'Bulletin board', x: 4, y: 2, w: 2 },
+      { id: 'maptable', name: 'Map table', x: 2, y: 9, w: 3, h: 2 },
+    ],
+  },
+  chapel: {
+    floor: 'wood', wall: '#ece6da', door: [9, 2],
+    decor: [{ type: 'stained', x: 2 }, { type: 'stained', x: 5 }, { type: 'stained', x: 9 }, { type: 'stained', x: 10 }, { type: 'stained', x: 14 }, { type: 'stained', x: 17 }],
+    furniture: [
+      { type: 'plant', x: 1, y: 4 }, { type: 'altar', x: 8, y: 4, w: 4 }, { type: 'plant', x: 18, y: 4 },
+      { type: 'pew', x: 2, y: 7, w: 5 }, { type: 'pew', x: 13, y: 7, w: 5 }, { type: 'pew', x: 2, y: 9, w: 5 }, { type: 'pew', x: 13, y: 9, w: 5 }, { type: 'pew', x: 2, y: 11, w: 5 }, { type: 'pew', x: 13, y: 11, w: 5 },
+    ],
+    stations: [{ id: 'altar', name: 'Altar: a quiet moment', x: 8, y: 4, w: 4 }],
+  },
+  quarters: {
+    floor: 'wood', wall: '#bcc7d6', door: [9, 2],
+    decor: [{ type: 'window', x: 5 }, { type: 'poster', x: 8, color: '#5d6b44' }, { type: 'keepsakes', x: 11, w: 4 }, { type: 'window', x: 16 }],
+    furniture: [
+      { type: 'rug', x: 7, y: 8, w: 5, h: 3 }, { type: 'bed', x: 2, y: 4, w: 2, h: 3 }, { type: 'desk', x: 7, y: 4, w: 2 }, { type: 'wardrobe', x: 16, y: 4, w: 2 }, { type: 'plant', x: 18, y: 12 }, { type: 'plant', x: 1, y: 12 },
+    ],
+    stations: [
+      { id: 'bed', name: 'Your bed: sleep', x: 2, y: 4, w: 2, h: 3 },
+      { id: 'qdesk', name: 'Your desk: journal', x: 7, y: 4, w: 2 },
+      { id: 'keepsakes', name: 'Shelf of keepsakes', x: 11, y: 2, w: 4 },
+      { id: 'wardrobe', name: 'Wardrobe', x: 16, y: 4, w: 2 },
+    ],
+  },
 };
-const ZONE_OF_STATION = { clinic: 'clinic', hq: 'hq', chapel: 'chapel', quarters: 'quarters', dfac: 'dfac', gym: 'gym', ops: 'flight' };
+const MAPS = { outside: { solids: [], stations: world.stations } };
+{
+  const s = MAPS.outside.solids;
+  world.buildings.forEach(b => s.push({ x: b.x * T, y: b.y * T, w: b.w * T, h: b.h * T }));
+  world.stations.forEach(st => s.push({ x: st.x * T, y: st.y * T, w: T, h: T }));
+  world.trees.forEach(t => s.push({ x: t[0] * T + 4, y: t[1] * T + 8, w: 8, h: 8 }));
+  world.helis.forEach(h => s.push({ x: h.x * T, y: h.y * T + 4, w: 32, h: 10 }));
+  world.decor.forEach(d => s.push({ x: d.x * T + 5, y: d.y * T + 10, w: 5, h: 6 }));
+}
+for (const id in ROOMS) {
+  const r = ROOMS[id], [dx, dw] = r.door;
+  const sol = [{ x: 0, y: 0, w: 320, h: 48 }, { x: 0, y: 0, w: 16, h: 240 }, { x: 304, y: 0, w: 16, h: 240 }, { x: 0, y: 224, w: dx * T, h: 16 }, { x: (dx + dw) * T, y: 224, w: 320, h: 16 }];
+  r.furniture.forEach(f => { if (f.type !== 'rug') sol.push({ x: f.x * T, y: f.y * T + 2, w: (f.w || 1) * T, h: (f.h || 1) * T - 2 }); });
+  MAPS[id] = { solids: sol, stations: r.stations, exit: { x: dx * T, y: 230, w: dw * T, h: 10 } };
+}
+// NPC zones: walkable rectangles (x, y, w, h in pixels) on a map
+const ZONES = {
+  clinic: { map: 'clinic', r: [100, 114, 84, 22] }, hqdesk: { map: 'hq', r: [116, 52, 60, 22] }, hq: { map: 'hq', r: [80, 100, 160, 90] },
+  chapel: { map: 'chapel', r: [114, 82, 84, 22] }, quarters: { map: 'outside', r: [250, 84, 62, 20] },
+  dfac: { map: 'outside', r: [10, 178, 60, 8] }, gym: { map: 'outside', r: [90, 178, 60, 8] }, flight: { map: 'outside', r: [180, 178, 120, 8] },
+};
+const ZONE_OF_STATION = { hq: 'hq', chapel: 'chapel', dfac: 'dfac', gym: 'gym', ops: 'flight' };
 
 // ---------- looks ----------
 const SKINS = ['#f2c9a0', '#e0ac85', '#c68863', '#8d5a3b', '#5c3a24'];
@@ -102,7 +172,7 @@ function newState(o) {
   D.ROSTER.forEach(p => { people[p.id] = { trust: D.TRAITS[p.trait].trust, down: null, fdmeDue: 0, fdmeDone: 0 }; });
   shuffle(D.ROSTER.map(p => p.id)).forEach((id, i) => { people[id].fdmeDue = 3 + Math.round(i * 46 / D.ROSTER.length); });
   return {
-    v: 1, name: o.name, pron: o.pron, look: { skin: o.skin, hair: o.hair },
+    v: 1, name: o.name, pron: o.pron, look: { skin: o.skin, hair: o.hair }, map: 'outside', coffeeDay: 0,
     day: 1, min: 360, energy: 100, maxE: 100, wallet: 40, budget: 40, items: { coffee: 0, donut: 0 },
     pos: { x: 150, y: 92 }, people, friends: {}, talked: {}, gifted: {}, scenes: {},
     xp: { clin: 0, aero: 0, lead: 0 }, upgrades: {}, flags: {}, queue: [], pending: [], scheduled: [],
@@ -175,6 +245,7 @@ function adjCommand(n) { S.command = clamp(S.command + n, 0, 100); }
 function addFriend(id, n) { S.friends[id] = clamp((S.friends[id] || 0) + n, 0, 800); }
 function gainXp(k, n) {
   const before = level(k); S.xp[k] += n; const after = level(k);
+  if (after > before) sfx('levelup');
   if (after > before) toast(`${SKILL_NAME[k]} skill up! Level ${after}` + (SKILL_UNLOCK[k][after] ? `: ${SKILL_UNLOCK[k][after]}.` : '.'), 5000);
 }
 function spend(energy, mins) { S.energy = Math.max(0, S.energy - energy); S.min += mins; }
@@ -205,7 +276,7 @@ function closeModal() { modalOpen = false; $('modal').style.display = 'none'; do
 function opt(parent, label, fn, o = {}) {
   const b = el('button', { class: 'opt' + (o.cls ? ' ' + o.cls : '') }, el('span', { class: 'k' }), el('span', { class: 'lbl' }, label));
   if (o.note) b.appendChild(el('span', { class: 'note' }, o.note));
-  if (o.disabled) b.disabled = true; else b.onclick = fn;
+  if (o.disabled) b.disabled = true; else b.onclick = () => { sfx('click'); fn(); };
   parent.appendChild(b); return b;
 }
 function para(parent, html, cls) { const p = el('p', { class: cls || '' }); p.innerHTML = html; parent.appendChild(p); return p; }
@@ -382,6 +453,7 @@ function resolveCase() {
     S.scheduled.push({ day: S.day + (worse ? 1 : CS.dispo === 'fly' ? 1 + Math.floor(random() * 2) : 3), type: worse ? 'worse' : 'incident', pid: id, caseId: cs.id });
   }
   if (thorough && dxOk) lines.push(`Thorough workup: bonus Clinical XP.`);
+  sfx(dxOk && kind === 'right' ? 'good' : 'bad');
   if (CS.dispo === 'down') setDown(id, okDispo ? cs.days : 2, cs.title);
   else if (CS.dispo === 'waiver') setDown(id, Math.max(cs.days || 0, 10), cs.title + ' (workup)');
   else if (CS.dispo === 'evac') setDown(id, Math.max(cs.days || 0, 10), cs.title + ' (hospital)');
@@ -466,6 +538,7 @@ function resolveFdme(choice) {
     lines.push(`<b>✘ Not safe.</b> You found ${esc(f.title.toLowerCase())} but cleared them anyway.`);
     S.scheduled.push({ day: S.day + 2, type: 'missed', pid, text: f.title, unsafe: true });
   }
+  sfx(ok ? 'good' : 'bad');
   if (choice === 'down') setDown(pid, 3, 'FDME follow-up');
   if (choice === 'waiver') setDown(pid, 14, 'FDME workup/waiver');
   show('FDME review', b => {
@@ -556,7 +629,7 @@ function weeklyBrief(auto) {
   return html;
 }
 function runIncident() {
-  S.flags.incident = true;
+  S.flags.incident = true; sfx('alarm');
   pages('Hard landing', [{ text: D.STORY.incidentAlert }], () => quiz('Hard landing', D.STORY.incident, (score, log) => {
     setDown('nguyen', 21, 'Hard landing: back injury'); setDown('patel', 10, 'Hard landing: concussion');
     adjCommand(score * 2 - 1); gainXp('lead', 6); gainXp('clin', score * 2);
@@ -630,7 +703,7 @@ function newDay(rested) {
   const notes = [];
   if (dow() === 4 && S.briefWeek !== week()) notes.push(`You missed the weekly brief. COL Park was not pleased.<br>` + weeklyBrief(true));
   if (S.day === END_DAY && !S.ended) { runInspection(() => newDay(rested)); return; }
-  S.day++; S.min = 360;
+  S.day++; S.min = 360; wakeUp();
   S.energy = rested ? S.maxE : Math.round(S.maxE * .6);
   if (!rested) notes.push(`You fell asleep at your desk and woke up stiff. Get to bed before 0200.`);
   let boost = (has('espresso') ? 15 : 0) + (hearts('okafor') >= 4 ? 10 : 0);
@@ -673,13 +746,21 @@ function joinEvent(e) {
 function eventOpt(b, loc) { const e = eventHere(loc); if (e) opt(b, `Join: ${e.title}`, () => joinEvent(e), { cls: 'hi' }); }
 
 // ---------- station menus ----------
+function sickNote() { return !weekday() ? 'weekdays only' : S.min < 450 ? 'opens 0730' : S.min >= 720 ? 'closed for today' : !S.queue.length ? 'nobody waiting' : ''; }
+function fdmeNote() { return !weekday() ? 'weekdays only' : S.min < 780 ? 'afternoons, from 1300' : S.min >= 1020 ? 'done for today (until 1700)' : S.fdmeDay === S.day ? 'already did a batch today' : !fdmeDueList().length ? 'none due' : ''; }
+function coffeeAction() {
+  if (S.coffeeDay === S.day) { toast('One cup is plenty.'); return; }
+  S.coffeeDay = S.day; const g = has('espresso') ? 10 : 3;
+  S.energy = Math.min(S.maxE + 25, S.energy + g);
+  toast(has('espresso') ? `A proper espresso. +${g} energy.` : `The old pot. It tastes like regret. +${g} energy.`);
+}
 function clinicMenu() {
   show('Aviation Medicine Clinic', b => {
     const n = S.queue.length, due = fdmeDueList(), ups = upReadyList();
     para(b, `Readiness ${readiness()}% · clinic budget ${S.budget} · ${Object.keys(S.upgrades).length}/6 upgrades`, 'tag');
-    const sickNote = !weekday() ? 'weekdays only' : S.min < 450 ? 'opens 0730' : S.min >= 720 ? 'closed for today' : !n ? 'nobody waiting' : '';
-    opt(b, `Sick call (${n} waiting)`, startSickCall, { disabled: !!sickNote, note: sickNote, cls: sickNote ? '' : 'hi' });
-    const fNote = !weekday() ? 'weekdays only' : S.min < 780 ? 'afternoons, from 1300' : S.min >= 1020 ? 'done for today (until 1700)' : S.fdmeDay === S.day ? 'already did a batch today' : !due.length ? 'none due' : '';
+    const sn = sickNote();
+    opt(b, `Sick call (${n} waiting)`, startSickCall, { disabled: !!sn, note: sn, cls: sn ? '' : 'hi' });
+    const fNote = fdmeNote();
     opt(b, `FDMEs (${due.length} due)`, startFdmes, { disabled: !!fNote, note: fNote, cls: fNote ? '' : 'hi' });
     opt(b, `Sign up slips (${ups.length} ready)`, upSlips, { disabled: !ups.length });
     opt(b, 'Study in the office (60 min)', studyMenu, { disabled: S.min >= 1320, note: S.min >= 1320 ? 'too late' : '' });
@@ -700,7 +781,7 @@ function upgradesMenu() {
     para(b, `Clinic budget: <b>${S.budget}</b>. COL Park grants more at each Friday brief, based on readiness.`, 'tag');
     D.UPGRADES.forEach(u => {
       if (has(u.id)) { para(b, `✔ <b>${esc(u.name)}</b>: ${esc(u.desc)}`, 'qa'); return; }
-      opt(b, `${u.name} (${u.cost})`, () => { S.budget -= u.cost; S.upgrades[u.id] = S.day; gainXp('lead', 3); toast(`Installed: ${u.name}.`); upgradesMenu(); }, { disabled: S.budget < u.cost, note: u.desc });
+      opt(b, `${u.name} (${u.cost})`, () => { sfx('cash'); S.budget -= u.cost; S.upgrades[u.id] = S.day; gainXp('lead', 3); toast(`Installed: ${u.name}.`); upgradesMenu(); }, { disabled: S.budget < u.cost, note: u.desc });
     });
     opt(b, 'Back', clinicMenu);
   }, { closable: true });
@@ -749,16 +830,16 @@ function chapelMenu() {
 function quartersMenu() {
   show('Your quarters', b => {
     para(b, S.min < 1080 ? `It's early. Sleeping now ends the day.` : 'Lights out? Sleeping saves the game.');
-    opt(b, 'Go to sleep', () => { closeModal(); newDay(S.min < 1440); });
+    opt(b, 'Go to sleep', () => { closeModal(); sfx('sleep'); newDay(S.min < 1440); });
     opt(b, 'Not yet', closeModal);
   }, { closable: true });
 }
 function dfacMenu() {
   show('DFAC', b => {
     para(b, `Wallet: $${S.wallet} · coffee: ${S.items.coffee} · donuts: ${S.items.donut}`, 'tag');
-    opt(b, 'Hot meal ($5): +40 energy, 30 min', () => { S.wallet -= 5; S.energy = Math.min(S.maxE, S.energy + 40); S.min += 30; closeModal(); toast('That hit the spot.'); }, { disabled: S.wallet < 5 || S.energy >= S.maxE, note: S.energy >= S.maxE ? 'not hungry' : '' });
-    opt(b, 'Coffee to go ($3): a small gift', () => { S.wallet -= 3; S.items.coffee++; dfacMenu(); }, { disabled: S.wallet < 3 });
-    opt(b, 'Box of donuts ($8): a big gift', () => { S.wallet -= 8; S.items.donut++; dfacMenu(); }, { disabled: S.wallet < 8 });
+    opt(b, 'Hot meal ($5): +40 energy, 30 min', () => { sfx('cash'); S.wallet -= 5; S.energy = Math.min(S.maxE, S.energy + 40); S.min += 30; closeModal(); toast('That hit the spot.'); }, { disabled: S.wallet < 5 || S.energy >= S.maxE, note: S.energy >= S.maxE ? 'not hungry' : '' });
+    opt(b, 'Coffee to go ($3): a small gift', () => { sfx('cash'); S.wallet -= 3; S.items.coffee++; dfacMenu(); }, { disabled: S.wallet < 3 });
+    opt(b, 'Box of donuts ($8): a big gift', () => { sfx('cash'); S.wallet -= 8; S.items.donut++; dfacMenu(); }, { disabled: S.wallet < 8 });
     eventOpt(b, 'dfac');
     opt(b, 'Leave', closeModal);
   }, { closable: true });
@@ -788,7 +869,7 @@ function talk(id) {
   const c = D.CAST[id], h = hearts(id);
   const sc = (c.scenes || []).find(s => h >= s.hearts && !S.scenes[id + s.hearts]);
   if (sc) {
-    S.scenes[id + sc.hearts] = true;
+    S.scenes[id + sc.hearts] = true; sfx('heart');
     if (sc.schedule) S.pending.push({ day: S.day + 1, pid: sc.schedule.pid, caseId: sc.schedule.caseId });
     const fx = sc.effect || {};
     if (fx.maxE) S.maxE += fx.maxE;
@@ -845,6 +926,14 @@ function journal(tab = 'today') {
     } else if (tab === 'glossary') {
       para(c, D.GLOSSARY.map(([t, d]) => `<b>${esc(t)}</b>: ${esc(d)}`).join('<br>'));
     } else if (tab === 'settings') {
+      const A = window.FLD_AUDIO;
+      if (A) {
+        para(c, `<b>Sound:</b> ${A.muted ? 'off' : 'on'} · <b>Music:</b> ${A.musicOn ? 'on' : 'off'} · <b>Volume:</b> ${Math.round(A.volume * 10)}/10. Press M to mute anytime.`);
+        opt(c, A.muted ? 'Turn sound on' : 'Turn sound off', () => { A.unlock(); A.setMuted(!A.muted); journal('settings'); });
+        opt(c, A.musicOn ? 'Turn music off' : 'Turn music on', () => { A.unlock(); A.setMusic(!A.musicOn); journal('settings'); });
+        opt(c, 'Volume up', () => { A.setVolume(Math.min(1, A.volume + .1)); journal('settings'); }, { disabled: A.volume >= .99 });
+        opt(c, 'Volume down', () => { A.setVolume(Math.max(0, A.volume - .1)); journal('settings'); }, { disabled: A.volume <= .01 });
+      }
       para(c, `Your progress saves each time you sleep.`, 'tag');
       opt(c, 'Start a new game', () => show('Start over?', bb => { para(bb, 'This erases your current save.'); opt(bb, 'Yes, start over', () => { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} charCreate(); }); opt(bb, 'Cancel', () => journal('settings')); }));
     }
@@ -875,7 +964,10 @@ function objectives() {
 
 // ---------- input ----------
 const keys = {};
+const unlockAudio = () => { if (window.FLD_AUDIO) FLD_AUDIO.unlock(); };
+addEventListener('pointerdown', unlockAudio);
 addEventListener('keydown', e => {
+  unlockAudio();
   if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
   const k = e.key.toLowerCase();
   if (modalOpen) {
@@ -887,6 +979,7 @@ addEventListener('keydown', e => {
   keys[k] = true;
   if (k === 'e' || k === ' ' || k === 'enter') { e.preventDefault(); interact(); }
   if (k === 'j' || k === 'tab') { e.preventDefault(); journal(); }
+  if (k === 'm' && window.FLD_AUDIO) { FLD_AUDIO.setMuted(!FLD_AUDIO.muted); toast(FLD_AUDIO.muted ? 'Sound off (M to turn it back on).' : 'Sound on.'); }
   if (k.startsWith('arrow')) e.preventDefault();
 });
 addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
@@ -901,12 +994,13 @@ document.querySelectorAll('.pb').forEach(b => {
 $('jbtn').onclick = () => { if (S && !modalOpen) journal(); };
 
 // ---------- movement ----------
-const P = { w: 9, h: 6, fx: 1, moving: false };
-function blocked(x, y, w, h) {
+const P = { w: 9, h: 6, fx: 1, dir: 'down', moving: false, step: 0 };
+function blocked(x, y, w, h, m = S.map) {
   if (x < 0 || y < 0 || x + w > 320 || y + h > 240) return true;
-  for (const s of solids) if (x < s.x + s.w && x + w > s.x && y < s.y + s.h && y + h > s.y) return true;
+  for (const s of MAPS[m].solids) if (x < s.x + s.w && x + w > s.x && y < s.y + s.h && y + h > s.y) return true;
   return false;
 }
+const dirOf = (dx, dy) => Math.abs(dx) > Math.abs(dy) ? 'side' : dy < 0 ? 'up' : 'down';
 function move(dt) {
   let dx = 0, dy = 0;
   if (keys.a || keys.arrowleft || keys.padleft) dx -= 1;
@@ -917,9 +1011,38 @@ function move(dt) {
   const sp = 62 * dt, nx = S.pos.x + dx * sp, ny = S.pos.y + dy * sp;
   if (!blocked(nx, S.pos.y, P.w, P.h)) S.pos.x = nx;
   if (!blocked(S.pos.x, ny, P.w, P.h)) S.pos.y = ny;
-  P.moving = !!(dx || dy); if (dx) P.fx = dx;
+  P.moving = !!(dx || dy);
+  if (dx) P.fx = dx;
+  if (P.moving) {
+    P.dir = dirOf(dx, dy);
+    P.step -= dt;
+    if (P.step <= 0) { P.step = .3; sfx('step'); if (S.map === 'outside') dust(S.pos.x + 4.5, S.pos.y + 6); }
+  }
+  if (S.map !== 'outside') {
+    const ex = MAPS[S.map].exit;
+    if (S.pos.y + P.h > ex.y && S.pos.x + P.w > ex.x && S.pos.x < ex.x + ex.w) leaveBuilding();
+  }
 }
-const npcs = Object.keys(D.CAST).map(id => ({ id, x: 0, y: 0, tx: 0, ty: 0, wait: 0, mv: false, fx: 1, zone: null }));
+
+// ---------- doors ----------
+let fading = false;
+function transition(fn) {
+  if (fading) { fn(); return; }
+  fading = true; const f = $('fade'); f.style.opacity = 1;
+  setTimeout(() => { fn(); parts.length = 0; f.style.opacity = 0; setTimeout(() => { fading = false; }, 180); }, 180);
+}
+function enterBuilding(m) {
+  sfx('door');
+  transition(() => { const [dx, dw] = ROOMS[m].door; S.map = m; S.pos = { x: dx * T + dw * T / 2 - 4, y: 212 }; P.dir = 'up'; });
+}
+function leaveBuilding() {
+  const from = S.map; sfx('door');
+  transition(() => { const s = STATION_BY_ID[from]; S.map = 'outside'; S.pos = { x: s.x * T + 3, y: (s.y + 1) * T + 3 }; P.dir = 'down'; });
+}
+function wakeUp() { S.map = 'quarters'; S.pos = { x: 70, y: 100 }; P.dir = 'down'; parts.length = 0; }
+
+// ---------- NPCs ----------
+const npcs = Object.keys(D.CAST).map(id => ({ id, x: 0, y: 0, tx: 0, ty: 0, wait: 0, mv: false, fx: 1, dir: 'down', zone: null, map: null }));
 function zoneFor(id) {
   const e = eventToday();
   if (e && S.min >= e.from && S.min < e.to) return ZONE_OF_STATION[e.loc];
@@ -927,24 +1050,26 @@ function zoneFor(id) {
   sched.forEach(([m, zone]) => { if (S.min >= m) z = zone; });
   return z;
 }
-function randomIn(zone) {
-  const [x, y, w, h] = ZONES[zone];
-  for (let i = 0; i < 20; i++) { const px = x + random() * (w - 9), py = y + random() * (h - 6); if (!blocked(px, py, 9, 6)) return [px, py]; }
+function randomIn(zk) {
+  const z = ZONES[zk], [x, y, w, h] = z.r;
+  for (let i = 0; i < 20; i++) { const px = x + random() * (w - 9), py = y + random() * (h - 6); if (!blocked(px, py, 9, 6, z.map)) return [px, py]; }
   return [x, y];
 }
 function updateNpcs(dt) {
   npcs.forEach(n => {
-    const z = zoneFor(n.id);
-    if (n.zone !== z) { n.zone = z; [n.x, n.y] = randomIn(z); n.tx = n.x; n.ty = n.y; }
+    const zk = zoneFor(n.id);
+    if (n.zone !== zk) { n.zone = zk; n.map = ZONES[zk].map; [n.x, n.y] = randomIn(zk); n.tx = n.x; n.ty = n.y; }
     n.wait -= dt;
     const dx = n.tx - n.x, dy = n.ty - n.y, d = Math.hypot(dx, dy);
-    if (d < 1 && n.wait <= 0) { [n.tx, n.ty] = randomIn(z); n.wait = 2 + random() * 4; }
+    if (d < 1 && n.wait <= 0) { [n.tx, n.ty] = randomIn(zk); n.wait = 2 + random() * 4; }
     n.mv = d >= 1;
     if (n.mv) {
       if (Math.abs(dx) > .3) n.fx = dx;
+      n.dir = dirOf(dx, dy);
       const sp = 22 * dt, nx = n.x + dx / d * sp, ny = n.y + dy / d * sp;
-      if (!blocked(nx, ny, 9, 6) && !(Math.abs(nx - S.pos.x) < 8 && Math.abs(ny - S.pos.y) < 5)) { n.x = nx; n.y = ny; } else { n.tx = n.x; n.ty = n.y; }
-    }
+      const bump = n.map === S.map && Math.abs(nx - S.pos.x) < 8 && Math.abs(ny - S.pos.y) < 5;
+      if (!blocked(nx, ny, 9, 6, n.map) && !bump) { n.x = nx; n.y = ny; } else { n.tx = n.x; n.ty = n.y; }
+    } else n.dir = 'down';
   });
 }
 
@@ -952,47 +1077,140 @@ function updateNpcs(dt) {
 let near = null;
 function findNear() {
   const px = S.pos.x + P.w / 2, py = S.pos.y + P.h / 2;
-  let best = null, bd = 22;
-  world.stations.forEach(s => { const d = Math.hypot(px - (s.x + .5) * T, py - (s.y + .5) * T); if (d < bd) { bd = d; best = { kind: 's', o: s }; } });
-  npcs.forEach(n => { const d = Math.hypot(px - (n.x + 4.5), py - (n.y + 3)); if (d < bd) { bd = d; best = { kind: 'n', o: n }; } });
+  let best = null, bd = 14;
+  MAPS[S.map].stations.forEach(s => {
+    const x = s.x * T, y = s.y * T, w = (s.w || 1) * T, h = (s.h || 1) * T;
+    const d = Math.hypot(Math.max(x - px, 0, px - x - w), Math.max(y - py, 0, py - y - h));
+    if (d < bd) { bd = d; best = { kind: 's', o: s }; }
+  });
+  npcs.forEach(n => {
+    if (n.map !== S.map) return;
+    const d = Math.hypot(px - (n.x + 4.5), py - (n.y + 3)) - 6;
+    if (d < bd) { bd = d; best = { kind: 'n', o: n }; }
+  });
   return best;
 }
-function interact() { if (!near) return; if (near.kind === 's') MENUS[near.o.id](); else talk(near.o.id); }
+const DOORS = { clinic: 1, hq: 1, chapel: 1, quarters: 1 };
+function flavor(title, text) { return () => info(title, text); }
+const ACT = {
+  outside: { clinic: () => enterBuilding('clinic'), hq: () => enterBuilding('hq'), chapel: () => enterBuilding('chapel'), quarters: () => enterBuilding('quarters'), dfac: dfacMenu, gym: gymMenu, ops: opsMenu },
+  clinic: {
+    front: clinicMenu, board: upgradesMenu, office: studyMenu, coffee: coffeeAction,
+    exam: () => { const n = sickNote(); if (n) toast(`Sick call: ${n}.`); else startSickCall(); },
+    fdme: () => { const n = fdmeNote(); if (n) toast(`FDMEs: ${n}.`); else startFdmes(); },
+    booth: () => info('Hearing booth', has('booth') ? 'The booth hums quietly. Audiograms are back in business.' : 'OUT OF ORDER. The door seal is shot. You can fix it from the upgrade plans on the wall.'),
+    vision: () => info('Vision tester', has('vision') ? `The new vision tester: crisp, bright, and it doesn't smell like the eighties.` : 'An ancient vision tester. One of the dials is held on with tape.'),
+    lab: () => info('Lab bench', has('lab') ? 'Point-of-care analyzers blink happily at you.' : 'An empty bench and a lonely test-tube rack. A point-of-care lab would go here.'),
+  },
+  hq: { park: hqMenu, bulletin, maptable: flavor('Map table', 'A map of the training areas, covered in pins and coffee rings.') },
+  chapel: { altar: chapelMenu },
+  quarters: { bed: quartersMenu, qdesk: () => journal(), keepsakes: keepsakesInfo, wardrobe: flavor('Wardrobe', 'Your uniforms. Pressed. Mostly.') },
+};
+function interact() {
+  if (!near || fading) return;
+  if (near.kind === 's') ACT[S.map][near.o.id](); else talk(near.o.id);
+}
+function keepsakesInfo() {
+  const items = [['rivera8', `Rivera's old aviator wings`], ['bell8', 'A mug with your name painted on it'], ['brooks6', 'An honorary Dustoff patch'], ['okafor4', `A thank-you note from Okafor`], ['park8', `COL Park's coin`], ['nguyen8', `A photo of Nguyen's first student flight`]].filter(([k]) => S.scenes[k]);
+  info('Shelf of keepsakes', items.length ? items.map(([, t]) => '• ' + esc(t)).join('<br>') : 'An empty shelf. It will fill up as the year goes on.');
+}
+
+// ---------- weather and particles ----------
+function weather() {
+  const h = ART.hash(S.day * 13, 7), s = seasonKey();
+  if (s === 'winter') return h < .55 ? 'snow' : 'clear';
+  return h < (s === 'spring' ? .3 : s === 'summer' ? .15 : .22) ? 'rain' : 'clear';
+}
+const parts = [];
+function dust(x, y) {
+  const col = seasonKey() === 'winter' ? '#ffffff' : '#d9c08a';
+  for (let i = 0; i < 2; i++) parts.push({ x: x + (random() - .5) * 6, y, vx: (random() - .5) * 10, vy: -5 - random() * 5, life: .4, col, size: 1 });
+}
+function updateParticles(dt) {
+  if (S.map === 'outside') {
+    const w = weather();
+    if (w === 'rain') for (let i = 0; i < 4; i++) parts.push({ x: random() * 360 - 10, y: -4, vx: -30, vy: 230, life: 1.3, col: 'rgba(170,200,235,.75)', size: 'rain' });
+    if (w === 'snow' && random() < .7) parts.push({ x: random() * 330, y: -2, vx: -6 + random() * 4, vy: 16 + random() * 10, life: 16, col: '#ffffff', size: 1, sway: 1 + random() * 6 });
+    if (seasonKey() === 'fall' && w !== 'rain' && random() < .06) parts.push({ x: random() * 320, y: -2, vx: 10 + random() * 10, vy: 14, life: 18, col: rnd(['#d9822b', '#c0392b', '#f2b13a']), size: 2, sway: 1 + random() * 6 });
+  }
+  for (let i = parts.length - 1; i >= 0; i--) {
+    const p = parts[i]; p.life -= dt;
+    p.x += (p.vx + (p.sway ? Math.sin(p.life * 2 + p.sway) * 8 : 0)) * dt; p.y += p.vy * dt;
+    if (p.life <= 0 || p.y > 244) parts.splice(i, 1);
+  }
+  if (parts.length > 700) parts.splice(0, parts.length - 700);
+}
+function drawParticles() {
+  parts.forEach(p => { ctx.fillStyle = p.col; if (p.size === 'rain') ctx.fillRect(p.x | 0, p.y | 0, 1, 4); else ctx.fillRect(p.x | 0, p.y | 0, p.size, p.size); });
+}
+
+// ---------- helicopters ----------
+const heliState = world.helis.map(() => ({ phase: 'parked', t: 15 + random() * 40, lift: 0, dx: 0, spin: false }));
+function updateHelis(dt) {
+  const flying = weekday() && S.min >= 480 && S.min < 1080;
+  heliState.forEach(st => {
+    st.t -= dt;
+    if (st.phase === 'parked') { st.spin = false; if (st.t <= 0) { if (flying) { st.phase = 'spool'; st.t = 2.5; } else st.t = 20; } }
+    else if (st.phase === 'spool') { st.spin = true; if (st.t <= 0) { st.phase = 'lift'; st.t = 4; } }
+    else if (st.phase === 'lift') { const k = 1 - Math.max(0, st.t) / 4; st.lift = k * k * 100; st.dx = k * k * 70; if (st.t <= 0) { st.phase = 'away'; st.t = 25 + random() * 30; } }
+    else if (st.phase === 'away') { if (st.t <= 0) { st.phase = 'land'; st.t = 4; } }
+    else if (st.phase === 'land') { const k = Math.max(0, st.t) / 4; st.lift = k * k * 100; st.dx = -k * k * 70; if (st.t <= 0) { st.lift = 0; st.dx = 0; st.phase = 'cool'; st.t = 3; } }
+    else if (st.phase === 'cool') { if (st.t <= 0) { st.phase = 'parked'; st.t = 40 + random() * 60; } }
+  });
+}
 
 // ---------- render ----------
-const bg = document.createElement('canvas'); bg.width = 320; bg.height = 240;
-ART.buildBG(bg.getContext('2d'), world);
+const bgCache = {};
+function getBG() {
+  const k = S.map === 'outside' ? 'outside-' + seasonKey() : S.map + Object.keys(S.upgrades).sort().join() + '|' + Object.keys(S.scenes).sort().join();
+  const hit = bgCache[S.map]; if (hit && hit.k === k) return hit.c;
+  const c = document.createElement('canvas'); c.width = 320; c.height = 240;
+  const g = c.getContext('2d');
+  if (S.map === 'outside') ART.buildBG(g, world, seasonKey()); else ART.buildInterior(g, ROOMS[S.map], { upgrades: S.upgrades, scenes: S.scenes });
+  bgCache[S.map] = { k, c }; return c;
+}
 function draw() {
-  const tm = performance.now() / 1000;
-  ctx.drawImage(bg, 0, 0);
-  world.stations.forEach(s => ART.station(ctx, s, tm));
-  const ents = [];
-  world.decor.forEach(d => ents.push({ y: d.y * T + 16, f: () => d.type === 'flag' ? ART.flag(ctx, d, tm) : ART.sock(ctx, d) }));
-  world.helis.forEach(h => ents.push({ y: h.y * T + 15, f: () => ART.heli(ctx, h, tm) }));
+  const tm = performance.now() / 1000, out = S.map === 'outside', season = seasonKey();
+  ctx.drawImage(getBG(), 0, 0);
+  const ents = [], late = [];
+  if (out) {
+    world.stations.forEach(s => ART.station(ctx, s, tm, season));
+    world.decor.forEach(d => ents.push({ y: d.y * T + 16, f: () => d.type === 'flag' ? ART.flag(ctx, d, tm) : ART.sock(ctx, d) }));
+    world.helis.forEach((h, i) => {
+      const st = heliState[i]; if (st.phase === 'away') return;
+      (st.lift > 8 ? late : ents).push({ y: h.y * T + 15, f: () => ART.heli(ctx, h, tm, st) });
+    });
+  }
   npcs.forEach(n => {
-    if (!n.zone) return;
+    if (!n.zone || n.map !== S.map) return;
     const frame = n.mv ? [0, 1, 0, 2][Math.floor(tm * 7) % 4] : 0, cx = Math.round(n.x + 4.5), bot = Math.round(n.y + 6);
-    ents.push({ y: bot, f: () => ART.drawChar(ctx, cx, bot, lookFor(n.id), frame, n.fx < 0) });
+    ents.push({ y: bot, f: () => ART.drawChar(ctx, cx, bot, lookFor(n.id), frame, n.fx < 0, false, n.dir) });
   });
   const frame = P.moving ? [0, 1, 0, 2][Math.floor(tm * 8) % 4] : 0, cx = Math.round(S.pos.x + 4.5), bot = Math.round(S.pos.y + 6);
-  ents.push({ y: bot, f: () => ART.drawChar(ctx, cx, bot, lookFor('me'), frame, P.fx < 0) });
+  ents.push({ y: bot, f: () => ART.drawChar(ctx, cx, bot, lookFor('me'), frame, P.fx < 0, false, P.dir) });
   ents.sort((a, b) => a.y - b.y).forEach(e => e.f());
+  late.forEach(e => e.f());
+  if (out) drawParticles();
+  const blink = Math.floor(tm * 3) % 2 ? '#ffd966' : '#fff3b0';
+  if (!out) { const ex = MAPS[S.map].exit; ART.arrow(ctx, ex.x + ex.w / 2, 229 + (Math.floor(tm * 3) % 2), blink); }
   if (near && !modalOpen) {
-    const blink = Math.floor(tm * 3) % 2 ? '#ffd966' : '#fff3b0';
-    if (near.kind === 's') ART.corners(ctx, near.o.x * T, near.o.y * T, 16, 16, blink);
+    if (near.kind === 's') { const s = near.o; ART.corners(ctx, s.x * T, s.y * T, (s.w || 1) * T, (s.h || 1) * T, blink); }
     else ART.arrow(ctx, Math.round(near.o.x + 4.5), Math.round(near.o.y) - 14 + (Math.floor(tm * 3) % 2), blink);
   }
   const t = S.min / 60; let a = 0;
   if (t >= 18 && t < 22) a = (t - 18) / 4 * .5; else if (t >= 22) a = .5;
   if (t < 7) a = (7 - t) * .25;
-  if (season() === 3) a += .04;
+  if (out && season === 'winter') a += .04;
+  if (out && weather() !== 'clear') a += .08;
+  if (!out) a *= .45;
   if (a > 0) { ctx.fillStyle = 'rgba(14,18,60,' + a + ')'; ctx.fillRect(0, 0, 320, 240); }
 }
 let hudTick = 0;
 function hud() {
   const pct = Math.min(100, Math.round(S.energy / S.maxE * 100));
+  const w = weather(), wIcon = S.map === 'outside' ? (w === 'rain' ? ' · rain' : w === 'snow' ? ' · snow' : '') : '';
   $('hud').innerHTML =
-    `<span><b>${dateStr()}</b> ${clock(S.min)}</span>` +
+    `<span><b>${dateStr()}</b> ${clock(S.min)}${wIcon}</span>` +
     `<span>EN <span class="bar"><i style="width:${pct}%"></i></span></span>` +
     `<span>READY <b>${readiness()}%</b></span>` +
     `<span>TRUST <b>${trustAvg()}</b></span>` +
@@ -1018,20 +1236,31 @@ function showCrash(e) {
     opt(b, 'Start a new game (erases the save)', () => { try { localStorage.removeItem(SAVE_KEY); } catch (x) {} location.reload(); });
   });
 }
+let sceneTick = 0;
 function tick(now, dt) {
-  if (S) {
-    if (!modalOpen) {
-      move(dt); updateNpcs(dt);
-      S.min += dt * 4;
-      if (S.min >= 720) closeSickCall();
-      if (!postgame() && !S.flags.incident && ((S.day === 37 && S.min >= 840) || (S.day > 37 && S.day < 43 && S.min >= 600))) runIncident();
-      else if (S.min >= 1560) newDay(false);
-    }
-    near = modalOpen ? null : findNear();
-    const pr = $('prompt');
-    if (near) { pr.style.display = 'block'; pr.textContent = '[E] ' + (near.kind === 's' ? near.o.name : `Talk to ${D.CAST[near.o.id].title}`); } else pr.style.display = 'none';
-    draw();
-    if (now - hudTick > 150) { hudTick = now; hud(); }
+  if (!S) return;
+  if (!modalOpen) {
+    if (!fading) move(dt); else P.moving = false;
+    updateNpcs(dt); updateHelis(dt);
+    S.min += dt * 4;
+    if (S.min >= 720) closeSickCall();
+    if (!postgame() && !S.flags.incident && ((S.day === 37 && S.min >= 840) || (S.day > 37 && S.day < 43 && S.min >= 600))) runIncident();
+    else if (S.min >= 1560) newDay(false);
+  }
+  updateParticles(dt);
+  near = modalOpen || fading ? null : findNear();
+  const pr = $('prompt');
+  if (near) {
+    pr.style.display = 'block';
+    pr.textContent = '[E] ' + (near.kind === 'n' ? `Talk to ${D.CAST[near.o.id].title}` : (S.map === 'outside' && DOORS[near.o.id] ? 'Enter: ' : '') + near.o.name);
+  } else pr.style.display = 'none';
+  draw();
+  if (now - hudTick > 150) { hudTick = now; hud(); }
+  if (now - sceneTick > 250 && window.FLD_AUDIO) {
+    sceneTick = now;
+    const spinning = heliState.some(s => s.phase !== 'parked' && s.phase !== 'away');
+    const prox = clamp((S.pos.y - 120) / 110, 0, 1);
+    FLD_AUDIO.setScene({ area: S.map, night: S.min >= 1200 || S.min < 390, season: seasonKey(), rotor: S.map === 'outside' ? clamp(prox * .5 + (spinning ? .35 : 0), 0, 1) : 0, rain: weather() === 'rain' });
   }
 }
 
@@ -1082,8 +1311,8 @@ function boot() {
 // Hooks for automated testing only.
 window.FLD_DEBUG = {
   get S() { return S; }, set S(v) { S = v; }, setRandom(fn) { random = fn; },
-  newDay, startSickCall, startFdmes, startFlight, weeklyBrief, runIncident, runBoard, runInspection, talk, MENUS, readiness, closeModal,
-  get modalOpen() { return modalOpen; }, get CS() { return CS; }, get FS() { return FS; },
+  newDay, enterBuilding, leaveBuilding, startSickCall, startFdmes, startFlight, weeklyBrief, runIncident, runBoard, runInspection, talk, MENUS, readiness, closeModal,
+  heliState, get modalOpen() { return modalOpen; }, get CS() { return CS; }, get FS() { return FS; },
 };
 boot();
 })();

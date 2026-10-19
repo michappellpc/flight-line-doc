@@ -6,7 +6,13 @@ Version 0.1 (Phase 0). This is the reference every feature gets checked against.
 
 ## Status
 
-**Phase 0 (design): done.** **Phase 1 (core loop): done.** **Phase 2 (content): done, pending clinical review.**
+**Phase 0 (design): done.** **Phase 1 (core loop): done.** **Phase 2 (content): done, pending clinical review.** **Phase 3 (art, sound, feel): done.**
+
+Phase 3 added:
+- Four interiors you walk into: the clinic (every upgrade is visible in the room), Brigade HQ, the chapel and your quarters (a keepsake shelf fills with gifts from heart scenes). You wake up in your quarters each morning
+- Seasonal art (spring, summer, fall leaves, winter snow on roofs and paths) and weather: rain, snow and falling leaves
+- Four-direction character sprites, footstep dust, helicopters that take off and land, fade transitions
+- Procedural sound and music (`js/audio.js`, no audio files): sound effects, ambience that changes by place, time, season, weather and rotor noise, and a seasonal chiptune loop. Settings in the journal; M mutes
 
 Phase 2 added:
 - 30 new cases (50 total): flight-specific, common sick call, medications and fitness for duty, behavioral health and fatigue, emergencies
@@ -30,7 +36,7 @@ Built in Phase 1:
 - Journal, glossary, objective hints, autosave on sleep, touch controls
 - `review.html` for clinical review and an automated full-year playthrough test
 
-Content now meets the §11 targets for cases, FDME findings, flights, heart scenes and events. Down slips last a quarter of their real-world length because a year is 56 days. Interiors and sound are deferred to Phase 3.
+Content now meets the §11 targets for cases, FDME findings, flights, heart scenes and events. Down slips last a quarter of their real-world length because a year is 56 days.
 
 ## 1. Pitch
 
