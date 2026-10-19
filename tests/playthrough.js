@@ -119,7 +119,7 @@ const SMART = process.argv.includes('smart');
   const summary = await page.evaluate(() => {
     const S = FLD_DEBUG.S;
     return { day: S.day, grade: S.grade, ended: S.ended, readiness: FLD_DEBUG.readiness(), command: S.command, budget: S.budget,
-      upgrades: Object.keys(S.upgrades), total: S.total, flags: S.flags, xp: S.xp, hours: S.hours, friends: S.friends };
+      upgrades: Object.keys(S.upgrades), total: S.total, readyHist: S.readyHist, flags: S.flags, xp: S.xp, hours: S.hours, friends: S.friends };
   });
   console.log(JSON.stringify(summary, null, 1));
   console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'No page errors.');

@@ -6,7 +6,17 @@ Version 0.1 (Phase 0). This is the reference every feature gets checked against.
 
 ## Status
 
-**Phase 0 (design): done.** **Phase 1 (core loop): done.** Built in Phase 1:
+**Phase 0 (design): done.** **Phase 1 (core loop): done.** **Phase 2 (content): done, pending clinical review.**
+
+Phase 2 added:
+- 30 new cases (50 total): flight-specific, common sick call, medications and fitness for duty, behavioral health and fatigue, emergencies
+- 10 new FDME findings (20 total) and 5 new scripted flights (8 total)
+- Heart scenes at 6 and 8 hearts for every character (24 total), with one-time perks
+- 16 more named aircrew (30 total), so sick call no longer grounds the same few people
+- Economy and friendship retuned; `reviewNote` flags on every item the authors were unsure of
+- `tests/validate-content.js` checks every data file
+
+Built in Phase 1:
 - Army conversion: Kestrel AAF map, UH-60/AH-64/HH-60 aircraft, CPT player, down/up slips
 - Character creation (name, skin, hair, pronouns)
 - Structured sick-call cases (history, exam, tests, diagnosis, disposition) with low-trust answers that hide key facts
@@ -20,7 +30,7 @@ Version 0.1 (Phase 0). This is the reference every feature gets checked against.
 - Journal, glossary, objective hints, autosave on sleep, touch controls
 - `review.html` for clinical review and an automated full-year playthrough test
 
-Content so far: 20 cases, 10 FDME findings, 3 scripted flights, 8 events. Phase 2 grows this toward the §11 targets. Down slips last a third of their real-world length because a year is 56 days. Interiors and sound are deferred to Phase 3.
+Content now meets the §11 targets for cases, FDME findings, flights, heart scenes and events. Down slips last a quarter of their real-world length because a year is 56 days. Interiors and sound are deferred to Phase 3.
 
 ## 1. Pitch
 

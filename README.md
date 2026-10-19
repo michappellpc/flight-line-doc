@@ -20,17 +20,19 @@ See [DESIGN.md](DESIGN.md) for the game design: pillars, systems, story, content
 | `index.html` | Page shell and styles |
 | `js/game.js` | Game engine and systems |
 | `js/art.js` | All pixel art, drawn in code |
-| `js/data/cases.js` | Sick-call cases |
-| `js/data/fdme.js` | FDME findings |
+| `js/data/cases*.js` | Sick-call cases (50, across four files) |
+| `js/data/fdme*.js` | FDME findings (20) |
+| `js/data/flights-more.js` | Additional scripted flights |
 | `js/data/people.js` | Aircrew roster, cast, dialogue and heart scenes |
 | `js/data/story.js` | Tests, upgrades, flights, events, story beats, glossary |
 | `review.html` | Readable, printable view of all medical content for clinical review |
 | `tests/playthrough.js` | Automated full-year playthrough |
+| `tests/validate-content.js` | Schema check for every data file |
 
 No build step. Open `index.html` in a browser to play locally.
 
 ## Clinical review
-Open `review.html` to see every case, answer, distractor, disposition, teaching point and source note in one place. When an item is checked, set its `reviewed` field to the date in the matching file in `js/data/`.
+Open `review.html` to see every case, answer, distractor, disposition, teaching point and source note in one place. Yellow boxes are the authors' notes on things they were unsure of. When an item is checked, set its `reviewed` field to the date in the matching file in `js/data/`, then run `node tests/validate-content.js`.
 
 ## Testing
 The playthrough test plays a full year through the real UI and fails on any page error. `random` mode clicks randomly; `smart` mode plays every case correctly.

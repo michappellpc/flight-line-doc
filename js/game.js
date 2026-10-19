@@ -100,7 +100,7 @@ function blankWeek() { return { seen: 0, dx: 0, dispo: 0, incidents: 0, over: 0,
 function newState(o) {
   const people = {};
   D.ROSTER.forEach(p => { people[p.id] = { trust: D.TRAITS[p.trait].trust, down: null, fdmeDue: 0, fdmeDone: 0 }; });
-  shuffle(D.ROSTER.map(p => p.id)).forEach((id, i) => { people[id].fdmeDue = 3 + Math.round(i * 3.4); });
+  shuffle(D.ROSTER.map(p => p.id)).forEach((id, i) => { people[id].fdmeDue = 3 + Math.round(i * 46 / D.ROSTER.length); });
   return {
     v: 1, name: o.name, pron: o.pron, look: { skin: o.skin, hair: o.hair },
     day: 1, min: 360, energy: 100, maxE: 100, wallet: 40, budget: 40, items: { coffee: 0, donut: 0 },
@@ -162,8 +162,8 @@ function gainXp(k, n) {
   if (after > before) toast(`${SKILL_NAME[k]} skill up! Level ${after}` + (SKILL_UNLOCK[k][after] ? `: ${SKILL_UNLOCK[k][after]}.` : '.'), 5000);
 }
 function spend(energy, mins) { S.energy = Math.max(0, S.energy - energy); S.min += mins; }
-// Game time is compressed (a year is 56 days), so real-world down-slip lengths are scaled to a third.
-function setDown(id, days, reason) { S.people[id].down = { until: S.day + Math.max(1, Math.round(days / 3)), reason }; }
+// Game time is compressed (a year is 56 days), so real-world down-slip lengths are scaled to a quarter.
+function setDown(id, days, reason) { S.people[id].down = { until: S.day + Math.max(1, Math.round(days / 4)), reason }; }
 
 // ---------- UI: toast, modal ----------
 let toastTimer = 0;
@@ -624,7 +624,7 @@ function newDay(rested) {
   fireScheduled(notes);
   const ups = upReadyList().length;
   if (ups) notes.push(`${ups} aircrew ready for an up slip at the clinic.`);
-  if (S.day === END_DAY + 1) D.ROSTER.forEach((p, i) => { S.people[p.id].fdmeDone = 0; S.people[p.id].fdmeDue = S.day + 3 + Math.round(i * 3.4); });
+  if (S.day === END_DAY + 1) D.ROSTER.forEach((p, i) => { S.people[p.id].fdmeDone = 0; S.people[p.id].fdmeDue = S.day + 3 + Math.round(i * 46 / D.ROSTER.length); });
   if (!postgame()) {
     if (S.day === 15) { S.flags.heatAsk = true; notes.push(`<b>Summer.</b> ` + esc(D.STORY.heatAsk)); }
     if (S.day === 29) notes.push(`<b>Fall.</b> ` + esc(D.STORY.fatigueNote) + ` You could raise it with COL Park at Brigade HQ.`);

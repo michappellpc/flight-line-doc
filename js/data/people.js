@@ -36,6 +36,22 @@ FLD.ROSTER = [
   { id: 'fischer', rank: 'CW2', name: 'Ellie Fischer', unit: 'dustoff', role: 'pilot', job: 'Medevac pilot',             age: 35, trait: 'calm' },
   { id: 'wallace', rank: 'SPC', name: 'Andre Wallace', unit: 'dustoff', role: 'crew',  job: 'Crew chief',                age: 23, trait: 'stoic' },
   { id: 'shah',    rank: 'SSG', name: 'Priya Shah',    unit: 'dustoff', role: 'medic', job: 'Flight medic',              age: 32, trait: 'worrier' },
+  { id: 'okoye',   rank: 'CW2', name: 'Grace Okoye',   unit: 'assault', role: 'pilot', job: 'Pilot',                     age: 29, trait: 'calm' },
+  { id: 'lindqvist', rank: 'CW4', name: 'Erik Lindqvist', unit: 'assault', role: 'pilot', job: 'Maintenance test pilot', age: 46, trait: 'oldschool' },
+  { id: 'baptiste', rank: '1LT', name: 'Rene Baptiste', unit: 'assault', role: 'pilot', job: 'Pilot, platoon leader',      age: 25, trait: 'eager' },
+  { id: 'kim',     rank: 'SPC', name: 'Joon Kim',      unit: 'assault', role: 'crew',  job: 'Crew chief',                age: 21, trait: 'joker' },
+  { id: 'abara',   rank: 'SSG', name: 'Tobi Abara',    unit: 'assault', role: 'crew',  job: 'Flight engineer, standardization', age: 38, trait: 'proud' },
+  { id: 'harlan',  rank: 'CW3', name: 'Beth Harlan',   unit: 'attack',  role: 'pilot', job: 'Instructor pilot',          age: 40, trait: 'calm' },
+  { id: 'reyes',   rank: 'WO1', name: 'Mateo Reyes',   unit: 'attack',  role: 'pilot', job: 'Apache pilot, new to the unit', age: 24, trait: 'worrier' },
+  { id: 'novak',   rank: 'CPT', name: 'Ivana Novak',   unit: 'attack',  role: 'pilot', job: 'Apache pilot, company commander', age: 32, trait: 'driven' },
+  { id: 'whitfield', rank: 'CW2', name: 'Cole Whitfield', unit: 'attack', role: 'pilot', job: 'Apache pilot',            age: 34, trait: 'chatty' },
+  { id: 'mbeki',   rank: 'CW3', name: 'Sipho Mbeki',   unit: 'attack',  role: 'pilot', job: 'Safety officer pilot',      age: 43, trait: 'stoic' },
+  { id: 'tran',    rank: 'CW3', name: 'Huy Tran',      unit: 'dustoff', role: 'pilot', job: 'Medevac pilot in command',  age: 39, trait: 'stoic' },
+  { id: 'castillo', rank: 'WO1', name: 'Lucia Castillo', unit: 'dustoff', role: 'pilot', job: 'Medevac pilot',           age: 25, trait: 'eager' },
+  { id: 'foster',  rank: 'SGT', name: 'Dana Foster',   unit: 'dustoff', role: 'crew',  job: 'Crew chief',                age: 28, trait: 'chatty' },
+  { id: 'yazzie',  rank: 'SGT', name: 'Nathan Yazzie', unit: 'dustoff', role: 'medic', job: 'Flight medic',              age: 30, trait: 'calm' },
+  { id: 'greer',   rank: 'SPC', name: 'Molly Greer',   unit: 'dustoff', role: 'medic', job: 'Flight medic in training',  age: 22, trait: 'worrier' },
+  { id: 'haddad',  rank: 'SFC', name: 'Omar Haddad',   unit: 'dustoff', role: 'crew',  job: 'Senior crew chief',         age: 42, trait: 'oldschool' },
 ];
 
 // The core cast walk around the airfield. Rivera, Nguyen and Brooks are also on the roster.

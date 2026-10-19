@@ -75,7 +75,7 @@
   D.FLIGHTS.forEach(f => {
     html += `<div class="card"><h3>${esc(f.title)}</h3><p>${f.lines.map(([w, t]) => (w === 'narr' ? '' : `<b>${esc(w)}:</b> `) + esc(t)).join('<br>')}</p>
       <p><b>Choice:</b> ${esc(f.choice.prompt)}</p><ul>${f.choice.options.map(o => `<li><b>${esc(o.label)}</b>: ${esc(o.result)}</li>`).join('')}</ul>
-      <p><b>Teaching point:</b> ${esc(f.teach)}</p></div>`;
+      <p><b>Teaching point:</b> ${esc(f.teach)}</p>${f.reviewNote ? `<div class="rnote"><b>Author's note for the reviewer:</b> ${esc(f.reviewNote)}</div>` : ''}</div>`;
   });
 
   html += `<h2>Hard landing and safety board</h2>`;
